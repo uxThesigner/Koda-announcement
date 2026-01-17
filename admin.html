@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff"> <title>Painel Administrativo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script src="_config.js"></script>
+    <script src="app.js"></script>
+    
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tap-highlight-transparent { -webkit-tap-highlight-color: transparent; }
+        .smooth-transition { transition: transform 0.3s ease-out; }
+        
+        /* Animações */
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <aside class="hidden md:flex w-64 bg-brand-900 text-white flex-col h-full fixed left-0 top-0 z-20 transition-colors duration-300">
+        <div class="h-20 flex items-center justify-center border-b border-white/10">
+            <span class="text-xl font-bold tracking-wider flex items-center">
+                <i class="app-icon text-brand-500 mr-2"></i>
+                <span class="app-name">Carregando...</span>
+            </span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 flex flex-col">
+            <a href="admin.html" class="flex items-center space-x-3 bg-brand-500 text-white px-4 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+                <i class="fas fa-chart-line w-6 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="leads.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-users w-6 text-center"></i>
+                <span class="font-medium">CRM & Leads</span>
+            </a>
+            
+            <a href="estoque.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-box w-6 text-center"></i>
+                <span class="font-medium">Estoque</span>
+            </a>
+
+            <div class="flex-1"></div>
+
+            <a href="index.html" target="_blank" class="flex items-center space-x-3 text-gray-400 hover:text-blue-400 hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-globe w-6 text-center"></i>
+                <span class="font-medium">Ver Site</span>
+            </a>
+            
+            <a href="login.html" class="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                <span class="font-medium">Sair</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full md:ml-64 relative">
+        
+        <header class="bg-white/90 backdrop-blur-md h-16 shadow-sm flex items-center justify-between px-5 sticky top-0 z-10 md:hidden">
+            <div class="flex items-center">
+                <div class="relative">
+                    <img id="user-avatar-mobile" src="" class="w-8 h-8 rounded-full border border-brand-100 bg-gray-200">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="ml-3">
+                    <h2 class="text-sm font-bold text-gray-800">Olá, <span class="user-first-name">Visitante</span></h2>
+                    <p class="text-[10px] text-brand-600 font-bold flex items-center"><i class="fas fa-circle text-[6px] mr-1"></i> Online</p>
+                </div>
+            </div>
+            <button class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition tap-highlight-transparent">
+                <i class="fas fa-bell text-xl"></i>
+                <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">3</span>
+            </button>
+        </header>
+
+        <header class="hidden md:flex bg-white h-20 shadow-sm items-center justify-between px-8">
+            <h2 class="text-2xl font-bold text-gray-800">Visão Geral</h2>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-right mr-2">
+                    <p class="text-sm font-bold text-gray-800" id="user-name">Carregando...</p>
+                    <p class="text-xs text-gray-500" id="user-role">...</p>
+                </div>
+                <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-brand-500">
+                
+                <button onclick="toggleModal('modalNovoAnuncio')" class="ml-4 bg-brand-500 text-white px-6 py-2.5 rounded-lg font-bold shadow-md hover:bg-brand-600 transition flex items-center transform hover:-translate-y-0.5">
+                    <i class="fas fa-plus mr-2"></i> Novo Anúncio
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar p-5 pb-24 md:p-8 md:pb-8">
+            
+            <div class="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 snap-x">
+                
+                <a href="metrics.html" class="bg-gradient-to-br from-brand-500 to-brand-600 p-5 rounded-2xl shadow-lg text-white min-w-[260px] md:min-w-0 snap-center relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition">
+                    <div class="absolute right-0 top-0 p-4 opacity-20"><i class="fas fa-chart-pie text-6xl text-white"></i></div>
+                    <p class="text-brand-100 text-xs font-bold uppercase tracking-wider mb-1">Faturamento (Mês)</p>
+                    <h3 class="text-3xl font-extrabold flex items-center">
+                        R$ 4.2M <i class="fas fa-chevron-right text-sm ml-auto opacity-0 group-hover:opacity-100 transition"></i>
+                    </h3>
+                    <div class="mt-4 flex items-center text-xs font-bold bg-white/20 w-fit px-2 py-1 rounded-lg backdrop-blur-sm">
+                        <i class="fas fa-arrow-up mr-1"></i> +12% vs anterior
+                    </div>
+                </a>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 min-w-[260px] md:min-w-0 snap-center hover:border-brand-200 transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-gray-400 text-xs font-bold uppercase">Leads Novos</p>
+                            <h3 class="text-2xl font-extrabold text-gray-800">142</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <p class="text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded w-fit">7 não lidos</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 min-w-[260px] md:min-w-0 snap-center hover:border-brand-200 transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-gray-400 text-xs font-bold uppercase">Em Estoque</p>
+                            <h3 class="text-2xl font-extrabold text-gray-800">28</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+                    <p class="text-orange-600 text-xs font-bold bg-orange-50 px-2 py-1 rounded w-fit">6 portais ativos</p>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-800">Últimos Leads</h3>
+                    <a href="leads.html" class="text-brand-600 text-xs font-bold bg-brand-50 px-3 py-1.5 rounded-full hover:bg-brand-100 transition">Ver todos</a>
+                </div>
+                
+                <div class="space-y-3 pb-8">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-brand-500 flex items-center active:scale-95 transition relative hover:shadow-md cursor-pointer">
+                        <div class="relative">
+                            <img src="https://ui-avatars.com/api/?name=Carlos+Mendes&background=random" class="w-11 h-11 rounded-full">
+                            <div class="absolute -bottom-1 -right-1 bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] border-2 border-white"><i class="fab fa-whatsapp"></i></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-gray-800 text-sm">Carlos Mendes</h4>
+                                <span class="text-[10px] text-gray-400">2min</span>
+                            </div>
+                            <div class="flex items-center mt-0.5 mb-1">
+                                <span class="bg-green-100 text-green-700 text-[9px] px-1.5 py-0.5 rounded font-bold mr-2">WHATSAPP</span>
+                                <span class="text-xs font-bold text-gray-700 truncate">Interesse em Trator</span>
+                            </div>
+                            <p class="text-xs text-gray-400 truncate">Gostaria de saber a entrada...</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300 ml-2"></i>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center active:scale-95 transition relative hover:shadow-md cursor-pointer">
+                        <div class="relative">
+                            <img src="https://ui-avatars.com/api/?name=Agro+Pecas&background=FDE047&color=000" class="w-11 h-11 rounded-full">
+                            <div class="absolute -bottom-1 -right-1 bg-yellow-400 text-yellow-900 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border-2 border-white"><i class="fas fa-handshake"></i></div>
+                        </div>
+                        <div class="ml-4 flex-1 overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-gray-800 text-sm">Agro Peças Ltda</h4>
+                                <span class="text-[10px] text-gray-400">15min</span>
+                            </div>
+                            <div class="flex items-center mt-0.5 mb-1">
+                                <span class="bg-yellow-100 text-yellow-800 text-[9px] px-1.5 py-0.5 rounded font-bold mr-2">MERCADO LIVRE</span>
+                                <span class="text-xs font-bold text-gray-700 truncate">Proposta de Troca</span>
+                            </div>
+                            <p class="text-xs text-gray-400 truncate">Aceita troca em uma menor?</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300 ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-end pb-2 pt-2 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <a href="#" class="flex flex-col items-center w-16 text-brand-600 tap-highlight-transparent">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Início</span>
+        </a>
+        
+        <a href="leads.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Leads</span>
+        </a>
+        
+        <div class="relative -top-5">
+            <button onclick="toggleModal('modalNovoAnuncio')" class="w-14 h-14 bg-brand-500 rounded-full shadow-xl flex items-center justify-center text-white text-2xl transform transition active:scale-90 tap-highlight-transparent border-4 border-gray-50 hover:bg-brand-600">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        
+        <a href="estoque.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-box text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Estoque</span>
+        </a>
+        
+        <button onclick="toggleMenu()" class="flex flex-col items-center w-16 text-gray-400 hover:text-gray-600 tap-highlight-transparent">
+            <i class="fas fa-bars text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Menu</span>
+        </button>
+    </nav>
+
+    <div id="mobileMenuSheet" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-fade-in" onclick="toggleMenu()"></div>
+        <div id="menuContent" class="absolute bottom-0 w-full bg-white rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
+            <div id="menuHandle" class="w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            
+            <div class="px-6 py-2 flex items-center border-b border-gray-50">
+                <img id="menu-user-avatar" src="" class="w-12 h-12 rounded-full border-2 border-white shadow">
+                <div class="ml-3">
+                    <h3 class="font-bold text-gray-800 text-lg" id="menu-user-name">Carregando...</h3>
+                    <p class="text-xs text-gray-500" id="menu-user-role">...</p>
+                </div>
+            </div>
+            
+            <div class="p-4 space-y-1 overflow-y-auto">
+                <a href="#" class="flex items-center p-4 hover:bg-gray-50 rounded-xl transition">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-user-cog"></i></div>
+                    <div class="flex-1"><h4 class="font-bold text-gray-800 text-sm">Meu Perfil</h4><p class="text-xs text-gray-400">Editar dados</p></div>
+                </a>
+                
+                <a href="index.html" target="_blank" class="flex items-center p-4 hover:bg-gray-50 rounded-xl transition">
+                    <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mr-4"><i class="fas fa-globe"></i></div>
+                    <div class="flex-1"><h4 class="font-bold text-gray-800 text-sm">Ver Site</h4><p class="text-xs text-gray-400">Visualizar loja</p></div>
+                </a>
+            </div>
+            <div class="p-6 border-t border-gray-100"><a href="index.html" class="flex items-center justify-center w-full py-3 text-red-500 font-bold bg-red-50 rounded-xl hover:bg-red-100 transition"><i class="fas fa-sign-out-alt mr-2"></i> Sair do Sistema</a></div>
+        </div>
+    </div>
+
+    <div id="modalNovoAnuncio" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
+        <div class="absolute inset-0" onclick="toggleModal('modalNovoAnuncio')"></div>
+        
+        <div id="anuncioContent" class="bg-white w-full md:w-auto md:max-w-4xl md:rounded-2xl rounded-t-3xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col animate-slide-up">
+            
+            <div id="anuncioHandle" class="md:hidden w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center"><i class="fas fa-rocket text-brand-600 mr-2"></i> Novo Anúncio</h3>
+                <button onclick="toggleModal('modalNovoAnuncio')" class="hidden md:block text-gray-400 hover:bg-gray-100 rounded-full p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto md:grid md:grid-cols-3 md:gap-8 space-y-6 md:space-y-0">
+                <div class="md:col-span-2 space-y-5">
+                    <div class="border-2 border-dashed border-gray-300 bg-gray-50 rounded-xl p-6 text-center active:bg-brand-50 transition hover:border-brand-500 cursor-pointer">
+                        <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm font-bold text-gray-600">Adicionar Fotos</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Título</label><input type="text" class="w-full rounded-lg border-gray-300 focus:ring-brand-500 py-3 font-medium" placeholder="Ex: Trator Modelo X..."></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-xs font-bold text-gray-500 uppercase">Valor (R$)</label><input type="text" class="w-full rounded-lg border-gray-300 py-3 font-bold text-gray-800" placeholder="0,00"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase">Categoria</label><select class="w-full rounded-lg border-gray-300 py-3"><option>Selecione...</option><option>Máquina</option><option>Veículo</option></select></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-1">
+                    <div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100 h-full flex flex-col">
+                        <h4 class="text-sm font-bold text-blue-800 mb-3 flex items-center"><i class="fas fa-share-alt mr-2"></i> Publicar em:</h4>
+                        <div class="space-y-2">
+                             <label class="flex items-center bg-white p-3 rounded-lg border-2 border-brand-500 shadow-sm opacity-80"><input type="checkbox" checked disabled class="text-brand-600 rounded"><span class="ml-2 text-xs font-bold text-gray-700">Site Oficial</span></label>
+                             <label class="flex items-center bg-white p-3 rounded-lg border border-gray-200 shadow-sm"><input type="checkbox" checked class="text-purple-600 rounded"><span class="ml-2 text-xs font-bold text-gray-700">OLX</span></label>
+                             <label class="flex items-center bg-white p-3 rounded-lg border border-gray-200 shadow-sm"><input type="checkbox" class="text-yellow-500 rounded"><span class="ml-2 text-xs font-bold text-gray-700">Mercado Livre</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex space-x-3 bg-white md:rounded-b-2xl">
+                <button onclick="toggleModal('modalNovoAnuncio')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg md:flex-none md:px-6 hover:bg-gray-200 transition">Cancelar</button>
+                <button class="flex-1 py-3 bg-brand-500 text-white font-bold rounded-lg shadow-lg active:bg-brand-600 transition">Publicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Modal e Menu (Mantida do original, apenas utilitários)
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            const content = id === 'modalNovoAnuncio' ? document.getElementById('anuncioContent') : null;
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden';
+                if(content) { content.style.transform = ''; content.classList.remove('smooth-transition'); }
+            } else { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; }
+        }
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenuSheet'); const content = document.getElementById('menuContent');
+            if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); document.body.style.overflow = 'hidden'; content.style.transform = ''; content.classList.remove('smooth-transition'); } 
+            else { menu.classList.add('hidden'); document.body.style.overflow = ''; }
+        }
+        
+        // Setup Draggable para Mobile
+        function setupDraggable(handleId, contentId, closeCallback) {
+            const handle = document.getElementById(handleId); const content = document.getElementById(contentId);
+            if(!handle || !content) return;
+            
+            let startY = 0; let currentTranslate = 0; let isDragging = false;
+            handle.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; isDragging = true; content.classList.remove('smooth-transition'); }, { passive: false });
+            handle.addEventListener('touchmove', (e) => { if (!isDragging) return; const currentY = e.touches[0].clientY; const diff = currentY - startY; if (diff > 0) { e.preventDefault(); currentTranslate = diff; content.style.transform = `translateY(${diff}px)`; } }, { passive: false });
+            handle.addEventListener('touchend', () => { isDragging = false; content.classList.add('smooth-transition'); if (currentTranslate > 100) { content.style.transform = `translateY(100%)`; setTimeout(closeCallback, 200); } else { content.style.transform = ''; } currentTranslate = 0; });
+        }
+        if ('ontouchstart' in window) {
+            setupDraggable('menuHandle', 'menuContent', toggleMenu);
+            setupDraggable('anuncioHandle', 'anuncioContent', () => toggleModal('modalNovoAnuncio'));
+        }
+
+        // Script rápido para preencher infos do usuário no Menu Mobile e Header (usando o objeto DB do config)
+        // Isso garante que mesmo sem o render completo, os dados básicos apareçam
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof DB !== 'undefined') {
+                const els = {
+                    'user-name': DB.usuarioAtual.nome,
+                    'user-role': DB.usuarioAtual.cargo,
+                    'menu-user-name': DB.usuarioAtual.nome,
+                    'menu-user-role': DB.usuarioAtual.cargo
+                };
+                for(const [id, val] of Object.entries(els)) {
+                    const el = document.getElementById(id);
+                    if(el) el.textContent = val;
+                }
+                const imgs = ['user-avatar', 'user-avatar-mobile', 'menu-user-avatar'];
+                imgs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.src = DB.usuarioAtual.avatar;
+                });
+                
+                // Primeiro nome para mobile
+                const firstName = DB.usuarioAtual.nome.split(' ')[0];
+                document.querySelectorAll('.user-first-name').forEach(el => el.textContent = firstName);
+            }
+        });
+    </script>
+</body>
+</html>
