@@ -5,18 +5,48 @@
 
 const CLIENTE = {
     info: {
-        nome: "DoTerra",            // Nome no Título/Header
-        slogan: "Marketplace Agro", // Slogan
-        versao: "v2.4",             // Versão do sistema
-        logoTexto: "DoTerra SYS",   // Texto da logo no menu
-        logoIcone: "fa-leaf"        // Ícone da FontAwesome (ex: fa-tractor, fa-building)
+        nome: "Koda System",        // Nome da Venture Builder
+        slogan: "Innovation Hub",   // Slogan Tech
+        versao: "v3.0.1",           // Versão
+        logoTexto: "Koda ADMIN",    // Texto do Menu
+        logoIcone: "fa-cubes"       // Ícone Tech (Cubos/Estrutura)
     },
     
-    // Paleta de Cores (O sistema vai gerar as variações automaticamente no Tailwind)
+    // Paleta de Cores (Tema Tech/SaaS Moderno)
     theme: {
-        primary: "#16a34a",   // Cor Principal (Botões, Destaques) - Ex: Verde (#16a34a) ou Azul (#2563eb)
-        secondary: "#D69E2E", // Cor Secundária (Detalhes, Avisos)
-        dark: "#0f172a"       // Cor de Fundo Menu Lateral / Dark Mode
+        primary: "#4f46e5",   // Indigo-600 (Cor moderna de startup)
+        secondary: "#06b6d4", // Cyan-500 (Acentos futuristas)
+        dark: "#1e1b4b"       // Indigo-950 (Fundo muito escuro e azulado)
+    }
+};
+
+// ============================================================
+// DICIONÁRIO DE TRADUÇÃO (I18N)
+// Usado pelo functions.js para trocar idioma
+// ============================================================
+
+const DICT = {
+    pt: {
+        nav_home: "Dashboard",
+        nav_leads: "Oportunidades", // Mudei de Leads para Oportunidades
+        nav_stock: "Portfólio",     // Mudei de Estoque para Portfólio
+        nav_menu: "Menu",
+        btn_new: "Novo Projeto",
+        welcome: "Bem-vindo",
+        loading: "Carregando Koda...",
+        theme_dark: "Modo Escuro",
+        theme_light: "Modo Claro"
+    },
+    en: {
+        nav_home: "Dashboard",
+        nav_leads: "Pipeline",
+        nav_stock: "Portfolio",
+        nav_menu: "Menu",
+        btn_new: "New Project",
+        welcome: "Welcome",
+        loading: "Loading Koda...",
+        theme_dark: "Dark Mode",
+        theme_light: "Light Mode"
     }
 };
 
@@ -28,36 +58,47 @@ const CLIENTE = {
 const DB = {
     usuarioAtual: {
         nome: "Paulo Ricardo",
-        avatar: "https://ui-avatars.com/api/?name=Paulo+Ricardo&background=0D9488&color=fff",
-        cargo: "Admin Master"
+        avatar: "https://ui-avatars.com/api/?name=Paulo+Ricardo&background=4f46e5&color=fff",
+        cargo: "CEO / Founder"
     },
     
     vendedores: [
-        { id: 1, nome: "Você", vendas: 4, total: 85000.00, isUser: true, foto: "https://ui-avatars.com/api/?name=Eu&background=random" },
-        { id: 2, nome: "Ana Clara", vendas: 2, total: 12400.00, isUser: false, foto: "https://ui-avatars.com/api/?name=Ana&background=random" },
-        { id: 3, nome: "Roberto S.", vendas: 1, total: 8200.00, isUser: false, foto: "https://ui-avatars.com/api/?name=Roberto&background=random" }
+        { id: 1, nome: "Paulo (CEO)", vendas: 12, total: 450000.00, isUser: true, foto: "https://ui-avatars.com/api/?name=Paulo&background=4f46e5&color=fff" },
+        { id: 2, nome: "Dev Team A", vendas: 5, total: 125000.00, isUser: false, foto: "https://ui-avatars.com/api/?name=Dev+Team&background=random" },
+        { id: 3, nome: "Comercial", vendas: 8, total: 82000.00, isUser: false, foto: "https://ui-avatars.com/api/?name=Sales&background=random" }
     ],
 
+    // Note que mudei os produtos para SOFTWARE em vez de Tratores
     estoque: [
         {
             id: 101,
-            titulo: "Trator Valtra A950",
-            subtitulo: "Ref: #TR-0921 • Maquinário",
-            imagem: "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?q=80&w=400",
-            valor: 285000.00,
+            titulo: "SaaS Delivery App",
+            subtitulo: "Ref: #KODA-01 • Código Fonte • React Native",
+            imagem: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=400",
+            valor: 35000.00,
             status: "ATIVO",
-            views: 1240,
-            canais: ["Site", "OLX"]
+            views: 4200,
+            canais: ["Direct", "LinkedIn"]
         },
         {
             id: 102,
-            titulo: "Fazenda Santa Fé",
-            subtitulo: "500 Hectares • Pecuária",
-            imagem: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=400",
-            valor: 4500000.00,
+            titulo: "CRM Imobiliário White-label",
+            subtitulo: "Ref: #KODA-02 • Sistema Web • Python/Django",
+            imagem: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=400",
+            valor: 150000.00,
             status: "RASCUNHO",
-            views: 0,
+            views: 120,
             canais: []
+        },
+        {
+            id: 103,
+            titulo: "Landing Page High-Convert",
+            subtitulo: "Ref: #KODA-03 • Template • HTML5",
+            imagem: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=400",
+            valor: 2500.00,
+            status: "VENDIDO",
+            views: 850,
+            canais: ["Hotmart"]
         }
     ]
 };
