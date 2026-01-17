@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestão de Estoque</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script src="_config.js"></script>
+    <script src="app.js"></script>
+    
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tap-highlight-transparent { -webkit-tap-highlight-color: transparent; }
+        .smooth-transition { transition: transform 0.3s ease-out; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Estilo para aba ativa */
+        .filter-tab.active { background-color: rgb(var(--brand-rgb, 31 41 55)); color: white; border: none; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <aside class="hidden md:flex w-64 bg-brand-900 text-white flex-col h-full fixed left-0 top-0 z-20 transition-colors duration-300">
+        <div class="h-20 flex items-center justify-center border-b border-white/10">
+            <span class="text-xl font-bold tracking-wider flex items-center">
+                <i class="app-icon text-brand-500 mr-2"></i>
+                <span class="app-name">Carregando...</span>
+            </span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 flex flex-col">
+            <a href="admin.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-chart-line w-6 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="leads.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-users w-6 text-center"></i>
+                <span class="font-medium">CRM & Leads</span>
+            </a>
+            
+            <a href="estoque.html" class="flex items-center space-x-3 bg-brand-500 text-white px-4 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+                <i class="fas fa-box w-6 text-center"></i>
+                <span class="font-medium">Estoque</span>
+            </a>
+
+            <div class="flex-1"></div>
+
+            <a href="index.html" target="_blank" class="flex items-center space-x-3 text-gray-400 hover:text-blue-400 hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-globe w-6 text-center"></i>
+                <span class="font-medium">Ver Site</span>
+            </a>
+            
+            <a href="login.html" class="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                <span class="font-medium">Sair</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full md:ml-64 relative">
+        
+        <header class="bg-white/90 backdrop-blur-md h-16 shadow-sm flex items-center justify-between px-5 sticky top-0 z-10 md:hidden">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold mr-3 border border-brand-200">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-gray-800">Estoque</h2>
+                    <p class="text-[10px] text-brand-600 font-bold flex items-center" id="mobile-count">Carregando...</p>
+                </div>
+            </div>
+            <button onclick="toggleModal('modalNovoAnuncio')" class="bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md active:scale-90 transition">
+                <i class="fas fa-plus"></i>
+            </button>
+        </header>
+
+        <header class="hidden md:flex bg-white h-20 shadow-sm items-center justify-between px-8">
+            <h2 class="text-2xl font-bold text-gray-800">Gestão de Estoque</h2>
+            <button onclick="toggleModal('modalNovoAnuncio')" class="bg-brand-500 text-white px-6 py-2.5 rounded-lg font-bold shadow-md hover:bg-brand-600 transition flex items-center transform hover:-translate-y-0.5">
+                <i class="fas fa-plus mr-2"></i> Novo Anúncio
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 md:p-8 md:pb-8">
+            
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4" id="filters-container">
+                <button onclick="filtrarEstoque('todos', this)" class="filter-tab active bg-brand-900 text-white px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-md transition">Todos</button>
+                <button onclick="filtrarEstoque('ATIVO', this)" class="filter-tab bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap hover:border-brand-500 transition">Ativos</button>
+                <button onclick="filtrarEstoque('RASCUNHO', this)" class="filter-tab bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap hover:border-yellow-500 transition">Pausados</button>
+                <button onclick="filtrarEstoque('VENDIDO', this)" class="filter-tab bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap hover:border-blue-500 transition">Vendidos</button>
+            </div>
+
+            <div id="lista-estoque-page" class="space-y-4">
+                <div class="text-center p-8 text-gray-400">Carregando itens...</div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-end pb-2 pt-2 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <a href="admin.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Início</span>
+        </a>
+        <a href="leads.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Leads</span>
+        </a>
+        <div class="relative -top-5">
+            <button onclick="toggleModal('modalNovoAnuncio')" class="w-14 h-14 bg-brand-600 rounded-full shadow-xl flex items-center justify-center text-white text-2xl transform transition active:scale-90 tap-highlight-transparent border-4 border-gray-50">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <a href="#" class="flex flex-col items-center w-16 text-brand-600 tap-highlight-transparent">
+            <i class="fas fa-box text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Estoque</span>
+        </a>
+        <button onclick="toggleMenu()" class="flex flex-col items-center w-16 text-gray-400 hover:text-gray-600 tap-highlight-transparent">
+            <i class="fas fa-bars text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Menu</span>
+        </button>
+    </nav>
+
+    <div id="mobileMenuSheet" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-fade-in" onclick="toggleMenu()"></div>
+        <div id="menuContent" class="absolute bottom-0 w-full bg-white rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
+            <div id="menuHandle" class="w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            
+            <div class="px-6 py-2 flex items-center border-b border-gray-50">
+                <img id="menu-user-avatar" src="" class="w-12 h-12 rounded-full border-2 border-white shadow">
+                <div class="ml-3">
+                    <h3 class="font-bold text-gray-800 text-lg" id="menu-user-name">...</h3>
+                    <p class="text-xs text-gray-500" id="menu-user-role">...</p>
+                </div>
+            </div>
+            
+            <div class="p-4 space-y-1 overflow-y-auto">
+                <a href="index.html" target="_blank" class="flex items-center p-4 hover:bg-gray-50 rounded-xl transition">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-globe"></i></div>
+                    <div class="flex-1"><h4 class="font-bold text-gray-800 text-sm">Ver Site</h4><p class="text-xs text-gray-400">Visualizar loja</p></div>
+                </a>
+                <a href="#" class="flex items-center p-4 hover:bg-gray-50 rounded-xl transition">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mr-4"><i class="fas fa-users-cog"></i></div>
+                    <div class="flex-1"><h4 class="font-bold text-gray-800 text-sm">Gerenciar Equipe</h4><p class="text-xs text-gray-400">Vendedores</p></div>
+                </a>
+            </div>
+            <div class="p-6 border-t border-gray-100"><a href="index.html" class="flex items-center justify-center w-full py-3 text-red-500 font-bold bg-red-50 rounded-xl hover:bg-red-100 transition"><i class="fas fa-sign-out-alt mr-2"></i> Sair do Sistema</a></div>
+        </div>
+    </div>
+
+    <div id="modalNovoAnuncio" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
+        <div class="absolute inset-0" onclick="toggleModal('modalNovoAnuncio')"></div>
+        <div id="anuncioContent" class="bg-white w-full md:w-auto md:max-w-4xl md:rounded-2xl rounded-t-3xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col animate-slide-up">
+            
+            <div id="anuncioHandle" class="md:hidden w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center"><i class="fas fa-rocket text-brand-600 mr-2"></i> Novo Anúncio</h3>
+                <button onclick="toggleModal('modalNovoAnuncio')" class="hidden md:block text-gray-400 hover:bg-gray-100 rounded-full p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto md:grid md:grid-cols-3 md:gap-8 space-y-6 md:space-y-0">
+                <div class="md:col-span-2 space-y-5">
+                    <div class="border-2 border-dashed border-gray-300 bg-gray-50 rounded-xl p-6 text-center active:bg-brand-50 transition"><i class="fas fa-camera text-3xl text-gray-400 mb-2"></i><p class="text-sm font-bold text-gray-600">Adicionar Fotos</p></div>
+                    <div class="space-y-4">
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Título</label><input type="text" class="w-full rounded-lg border-gray-300 focus:ring-brand-500 py-3 font-medium" placeholder="Ex: Trator John Deere..."></div>
+                        <div class="grid grid-cols-2 gap-4"><div><label class="text-xs font-bold text-gray-500 uppercase">Valor (R$)</label><input type="text" class="w-full rounded-lg border-gray-300 py-3 font-bold text-gray-800" placeholder="0,00"></div><div><label class="text-xs font-bold text-gray-500 uppercase">Categoria</label><select class="w-full rounded-lg border-gray-300 py-3"><option>🚜 Máquina</option><option>🌾 Terra</option></select></div></div>
+                    </div>
+                </div>
+                <div class="md:col-span-1">
+                    <div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100 h-full flex flex-col">
+                        <h4 class="text-sm font-bold text-blue-800 mb-3 flex items-center"><i class="fas fa-share-alt mr-2"></i> Publicar em:</h4>
+                        <div class="space-y-2 overflow-y-auto max-h-[250px] pr-1 no-scrollbar">
+                            <label class="flex items-center bg-white p-3 rounded-lg border-2 border-brand-500 shadow-sm opacity-80"><input type="checkbox" checked disabled class="text-brand-600 rounded"><span class="ml-2 text-xs font-bold text-gray-700">Site Oficial</span></label>
+                            <label class="flex items-center bg-white p-3 rounded-lg border border-gray-200 shadow-sm"><input type="checkbox" checked class="text-purple-600 rounded"><span class="ml-2 text-xs font-bold text-gray-700">OLX</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex space-x-3 bg-white md:rounded-b-2xl">
+                <button onclick="toggleModal('modalNovoAnuncio')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg md:flex-none md:px-6">Cancelar</button>
+                <button class="flex-1 py-3 bg-brand-500 text-white font-bold rounded-lg shadow-lg active:bg-brand-700 transition">Publicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Modais (Igual aos outros arquivos)
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            const content = id === 'modalNovoAnuncio' ? document.getElementById('anuncioContent') : null;
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden';
+                if(content) { content.style.transform = ''; content.classList.remove('smooth-transition'); }
+            } else { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; }
+        }
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenuSheet'); const content = document.getElementById('menuContent');
+            if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); document.body.style.overflow = 'hidden'; content.style.transform = ''; content.classList.remove('smooth-transition'); } 
+            else { menu.classList.add('hidden'); document.body.style.overflow = ''; }
+        }
+        
+        // Setup Draggable Mobile
+        function setupDraggable(handleId, contentId, closeCallback) {
+            const handle = document.getElementById(handleId); const content = document.getElementById(contentId);
+            if(!handle || !content) return;
+            let startY = 0; let currentTranslate = 0; let isDragging = false;
+            handle.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; isDragging = true; content.classList.remove('smooth-transition'); }, { passive: false });
+            handle.addEventListener('touchmove', (e) => { if (!isDragging) return; const currentY = e.touches[0].clientY; const diff = currentY - startY; if (diff > 0) { e.preventDefault(); currentTranslate = diff; content.style.transform = `translateY(${diff}px)`; } }, { passive: false });
+            handle.addEventListener('touchend', () => { isDragging = false; content.classList.add('smooth-transition'); if (currentTranslate > 100) { content.style.transform = `translateY(100%)`; setTimeout(closeCallback, 200); } else { content.style.transform = ''; } currentTranslate = 0; });
+        }
+        if ('ontouchstart' in window) {
+            setupDraggable('menuHandle', 'menuContent', toggleMenu);
+            setupDraggable('anuncioHandle', 'anuncioContent', () => toggleModal('modalNovoAnuncio'));
+        }
+
+        // ===============================================
+        // LÓGICA ESPECÍFICA DA PÁGINA (ESTOQUE)
+        // ===============================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarLista('todos');
+            updateUserInfos(); // Função do app.js ou customizada abaixo
+        });
+
+        function updateUserInfos() {
+             if(typeof DB !== 'undefined') {
+                document.getElementById('mobile-count').textContent = `${DB.estoque.filter(i => i.status === 'ATIVO').length} Ativos`;
+                
+                const els = {'menu-user-name': DB.usuarioAtual.nome, 'menu-user-role': DB.usuarioAtual.cargo};
+                for(const [id, val] of Object.entries(els)) { const el = document.getElementById(id); if(el) el.textContent = val; }
+                const img = document.getElementById('menu-user-avatar'); if(img) img.src = DB.usuarioAtual.avatar;
+            }
+        }
+
+        function filtrarEstoque(status, btn) {
+            // Atualiza visual dos botões
+            document.querySelectorAll('.filter-tab').forEach(b => {
+                b.classList.remove('active', 'bg-brand-900', 'text-white');
+                b.classList.add('bg-white', 'text-gray-600', 'border');
+            });
+            
+            // Ativa o clicado (neutralizando a cor para brand-900 via JS ou classes)
+            btn.classList.remove('bg-white', 'text-gray-600', 'border');
+            btn.classList.add('active', 'bg-brand-900', 'text-white'); // Tailwind interpreta brand-900 via app.js config
+
+            renderizarLista(status);
+        }
+
+        function renderizarLista(filtro) {
+            const container = document.getElementById('lista-estoque-page');
+            if(!container || typeof DB === 'undefined') return;
+
+            // Filtra os dados
+            let itens = DB.estoque;
+            if(filtro !== 'todos') {
+                itens = itens.filter(i => i.status === filtro);
+            }
+
+            if(itens.length === 0) {
+                container.innerHTML = `<div class="text-center py-10"><i class="fas fa-box-open text-4xl text-gray-200 mb-3"></i><p class="text-gray-400">Nenhum item encontrado.</p></div>`;
+                return;
+            }
+
+            // Mapeia Cores de Status
+            const statusColors = {
+                'ATIVO': 'bg-green-500',
+                'RASCUNHO': 'bg-yellow-400',
+                'VENDIDO': 'bg-gray-600'
+            };
+
+            container.innerHTML = itens.map(item => `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col md:flex-row gap-4 animate-fade-in ${item.status === 'VENDIDO' ? 'opacity-75 bg-gray-50' : ''}">
+                    <div class="w-full md:w-48 h-32 bg-gray-200 rounded-lg relative overflow-hidden flex-shrink-0 group cursor-pointer" onclick="window.location.href='detalhe.html?id=${item.id}'">
+                        <img src="${item.imagem}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110 ${item.status === 'VENDIDO' ? 'grayscale opacity-60' : ''}">
+                        <span class="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded ${statusColors[item.status] || 'bg-gray-500'}">${item.status}</span>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg ${item.status === 'VENDIDO' ? 'text-gray-500 line-through' : ''}">${item.titulo}</h3>
+                                <p class="text-xs text-gray-500 mb-2">${item.subtitulo}</p>
+                                <p class="text-xl font-black ${item.status === 'VENDIDO' ? 'text-gray-400' : 'text-brand-700'}">${item.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                            </div>
+                            <div class="text-right hidden md:block">
+                                <p class="text-xs text-gray-400">Visualizações</p>
+                                <p class="font-bold text-gray-700">${item.views}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex flex-wrap gap-2 items-center">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase mr-1">Canais:</span>
+                            ${item.canais.length > 0 ? item.canais.map(c => `<span class="bg-gray-100 text-gray-600 border border-gray-200 text-[10px] px-2 py-0.5 rounded font-bold">${c}</span>`).join('') : '<span class="text-[10px] text-red-400">Nenhum</span>'}
+                        </div>
+                    </div>
+
+                    <div class="flex md:flex-col justify-end gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4">
+                        <button class="flex-1 md:flex-none bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center border border-blue-100">
+                            <i class="fas fa-pen mr-2"></i> Editar
+                        </button>
+                        ${item.status !== 'VENDIDO' ? `
+                        <button class="flex-1 md:flex-none bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center border border-red-100">
+                            <i class="fas fa-pause mr-2"></i> Pausar
+                        </button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
