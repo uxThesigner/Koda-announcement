@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestão de Leads</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script src="_config.js"></script>
+    <script src="app.js"></script>
+    
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tap-highlight-transparent { -webkit-tap-highlight-color: transparent; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Aba Ativa */
+        .filter-pill.active { background-color: rgb(var(--brand-rgb, 31 41 55)); color: white; border-color: transparent; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <aside class="hidden md:flex w-64 bg-brand-900 text-white flex-col h-full fixed left-0 top-0 z-20 transition-colors duration-300">
+        <div class="h-20 flex items-center justify-center border-b border-white/10">
+            <span class="text-xl font-bold tracking-wider flex items-center">
+                <i class="app-icon text-brand-500 mr-2"></i>
+                <span class="app-name">Carregando...</span>
+            </span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 flex flex-col">
+            <a href="admin.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-chart-line w-6 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="leads.html" class="flex items-center space-x-3 bg-brand-500 text-white px-4 py-3 rounded-xl shadow-lg transition transform hover:scale-105">
+                <i class="fas fa-users w-6 text-center"></i>
+                <span class="font-medium">CRM & Leads</span>
+            </a>
+            
+            <a href="estoque.html" class="flex items-center space-x-3 text-gray-400 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition">
+                <i class="fas fa-box w-6 text-center"></i>
+                <span class="font-medium">Estoque</span>
+            </a>
+
+            <div class="flex-1"></div>
+            <a href="login.html" class="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-white/10 px-4 py-3 rounded-xl transition"><i class="fas fa-sign-out-alt w-6 text-center"></i><span class="font-medium">Sair</span></a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full md:ml-64 relative">
+        
+        <header class="bg-white/90 backdrop-blur-md h-16 shadow-sm flex items-center justify-between px-5 sticky top-0 z-10 md:hidden">
+            <div class="flex items-center">
+                <a href="admin.html" class="text-gray-500 mr-4 active:text-brand-600 transition"><i class="fas fa-arrow-left text-xl"></i></a>
+                <h2 class="text-lg font-bold text-gray-800">Gestão de Leads</h2>
+            </div>
+            <div class="flex space-x-3">
+                <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-brand-100 hover:text-brand-600 transition"><i class="fas fa-search"></i></button>
+            </div>
+        </header>
+
+        <header class="hidden md:flex bg-white h-20 shadow-sm items-center justify-between px-8">
+            <h2 class="text-2xl font-bold text-gray-800">CRM & Negociações</h2>
+            <div class="flex space-x-2">
+                <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition"><i class="fas fa-filter mr-2"></i> Filtros</button>
+                <button class="bg-brand-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-brand-600 transition shadow"><i class="fas fa-file-export mr-2"></i> Exportar</button>
+            </div>
+        </header>
+
+        <div class="bg-white pb-3 px-5 border-b border-gray-100 overflow-x-auto no-scrollbar whitespace-nowrap pt-3 md:px-8">
+            <button onclick="filtrarLeads('todos', this)" class="filter-pill active bg-brand-900 text-white px-4 py-1.5 rounded-full text-xs font-bold mr-2 shadow-sm transform active:scale-95 transition border border-transparent">Todos</button>
+            <button onclick="filtrarLeads('NOVO', this)" class="filter-pill bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold mr-2 border border-gray-200 hover:border-brand-300">Novos <span class="ml-1 bg-green-500 text-white px-1.5 rounded-full text-[9px]" id="badge-novos">0</span></button>
+            <button onclick="filtrarLeads('NEGOCIACAO', this)" class="filter-pill bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold mr-2 border border-gray-200 hover:border-brand-300">Negociação</button>
+            <button onclick="filtrarLeads('VENDIDO', this)" class="filter-pill bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold mr-2 border border-gray-200 hover:border-brand-300">Fechados</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 bg-gray-50 md:p-8">
+            <div id="lista-leads" class="space-y-4 max-w-4xl mx-auto">
+                <div class="text-center p-10 text-gray-400">Carregando leads...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-end pb-2 pt-2 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <a href="admin.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Início</span>
+        </a>
+        <a href="#" class="flex flex-col items-center w-16 text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Leads</span>
+        </a>
+        <div class="relative -top-5">
+            <button onclick="toggleModal('modalNovoAnuncio')" class="w-14 h-14 bg-brand-600 rounded-full shadow-xl flex items-center justify-center text-white text-2xl transform transition active:scale-90 tap-highlight-transparent border-4 border-gray-50">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <a href="estoque.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand-600 tap-highlight-transparent transition">
+            <i class="fas fa-box text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Estoque</span>
+        </a>
+        <button onclick="toggleMenu()" class="flex flex-col items-center w-16 text-gray-400 hover:text-gray-600 tap-highlight-transparent">
+            <i class="fas fa-bars text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Menu</span>
+        </button>
+    </nav>
+
+    <div id="mobileMenuSheet" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-fade-in" onclick="toggleMenu()"></div>
+        <div id="menuContent" class="absolute bottom-0 w-full bg-white rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
+            <div id="menuHandle" class="w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            <div class="px-6 py-2 flex items-center border-b border-gray-50">
+                <img id="menu-user-avatar" src="" class="w-12 h-12 rounded-full border-2 border-white shadow">
+                <div class="ml-3"><h3 class="font-bold text-gray-800 text-lg" id="menu-user-name">...</h3><p class="text-xs text-gray-500" id="menu-user-role">...</p></div>
+            </div>
+            <div class="p-6 border-t border-gray-100"><a href="index.html" class="flex items-center justify-center w-full py-3 text-red-500 font-bold bg-red-50 rounded-xl hover:bg-red-100 transition"><i class="fas fa-sign-out-alt mr-2"></i> Sair do Sistema</a></div>
+        </div>
+    </div>
+
+    <div id="modalNovoAnuncio" class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
+        <div class="absolute inset-0" onclick="toggleModal('modalNovoAnuncio')"></div>
+        <div id="anuncioContent" class="bg-white w-full md:w-auto md:max-w-4xl md:rounded-2xl rounded-t-3xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col animate-slide-up">
+            <div id="anuncioHandle" class="md:hidden w-full flex justify-center pt-4 pb-2 cursor-grab touch-none bg-white rounded-t-3xl"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center"><i class="fas fa-rocket text-brand-600 mr-2"></i> Novo Anúncio</h3>
+                <button onclick="toggleModal('modalNovoAnuncio')" class="hidden md:block text-gray-400 hover:bg-gray-100 rounded-full p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 text-center text-gray-500">Módulo de anúncio igual ao do Estoque.</div>
+        </div>
+    </div>
+
+    <script>
+        // ===========================================
+        // 1. DADOS DE LEADS (MOCK DATA)
+        // ===========================================
+        // Em um sistema real, isso viria de DB.leads ou de uma API
+        const MOCK_LEADS = [
+            { id: 1, nome: "Carlos Mendes", local: "Ariquemes, RO", plataforma: "whatsapp", status: "NOVO", interesse: "Trator Valtra A950", msg: "Gostaria de saber o valor da entrada...", time: "10min", atendenteId: 2 },
+            { id: 2, nome: "Agro Peças Ltda", local: "Porto Velho, RO", plataforma: "ml", status: "NEGOCIACAO", interesse: "Colheitadeira TC5090", msg: "Proposta de troca enviada.", time: "2h", atendenteId: 1 },
+            { id: 3, nome: "Marcos Silva", local: "Ji-Paraná, RO", plataforma: "olx", status: "PENDENTE", interesse: "Hilux SRX 2024", msg: "Ainda está disponível?", time: "5h", atendenteId: null },
+            { id: 4, nome: "Trans Log", local: "Cacoal, RO", plataforma: "webmotors", status: "VENDIDO", interesse: "Frota Volvo FH", msg: "Negócio fechado.", time: "1d", atendenteId: 3 },
+            { id: 5, nome: "João Pedro", local: "Vilhena, RO", plataforma: "facebook", status: "NOVO", interesse: "Sítio 20 Alqueires", msg: "Aceita gado no negócio?", time: "30min", atendenteId: 2 }
+        ];
+
+        // Configurações de Plataformas (Cores e Ícones)
+        const PLATAFORMAS = {
+            'whatsapp': { icon: 'fab fa-whatsapp', colorBg: 'bg-green-500', colorText: 'text-green-700', badge: 'bg-green-100' },
+            'ml': { icon: 'fas fa-handshake', colorBg: 'bg-yellow-400', colorText: 'text-yellow-800', badge: 'bg-yellow-100' },
+            'olx': { icon: 'fas fa-store', colorBg: 'bg-purple-600', colorText: 'text-purple-700', badge: 'bg-purple-100' },
+            'webmotors': { icon: 'fas fa-car', colorBg: 'bg-red-600', colorText: 'text-red-700', badge: 'bg-red-100' },
+            'facebook': { icon: 'fab fa-facebook-f', colorBg: 'bg-blue-600', colorText: 'text-blue-700', badge: 'bg-blue-100' }
+        };
+
+        const STATUS_CONFIG = {
+            'NOVO': { border: 'border-green-500', badge: 'bg-green-100 text-green-700' },
+            'NEGOCIACAO': { border: 'border-blue-500', badge: 'bg-blue-100 text-blue-700' },
+            'PENDENTE': { border: 'border-purple-500', badge: 'bg-purple-100 text-purple-700' },
+            'VENDIDO': { border: 'border-gray-300 opacity-70', badge: 'bg-gray-200 text-gray-600' }
+        };
+
+        // ===========================================
+        // 2. LÓGICA DA PÁGINA
+        // ===========================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarLeads('todos');
+            updateCounters();
+            
+            // Preenche infos do usuário no menu
+            if(typeof DB !== 'undefined') {
+                const els = {'menu-user-name': DB.usuarioAtual.nome, 'menu-user-role': DB.usuarioAtual.cargo};
+                for(const [id, val] of Object.entries(els)) { const el = document.getElementById(id); if(el) el.textContent = val; }
+                const img = document.getElementById('menu-user-avatar'); if(img) img.src = DB.usuarioAtual.avatar;
+            }
+        });
+
+        function updateCounters() {
+            const novos = MOCK_LEADS.filter(l => l.status === 'NOVO').length;
+            document.getElementById('badge-novos').textContent = novos;
+            if(novos === 0) document.getElementById('badge-novos').style.display = 'none';
+        }
+
+        function filtrarLeads(filtro, btn) {
+            document.querySelectorAll('.filter-pill').forEach(b => {
+                b.classList.remove('active', 'bg-brand-900', 'text-white');
+                b.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-200');
+            });
+            btn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-200');
+            btn.classList.add('active', 'bg-brand-900', 'text-white'); // Tailwind via JS config
+            
+            renderizarLeads(filtro);
+        }
+
+        function renderizarLeads(filtro) {
+            const container = document.getElementById('lista-leads');
+            let leads = MOCK_LEADS;
+
+            if (filtro !== 'todos') {
+                // Filtro "Inteligente": Se for negociação, inclui pendente também
+                if (filtro === 'NEGOCIACAO') {
+                    leads = leads.filter(l => l.status === 'NEGOCIACAO' || l.status === 'PENDENTE');
+                } else {
+                    leads = leads.filter(l => l.status === filtro);
+                }
+            }
+
+            if (leads.length === 0) {
+                container.innerHTML = `<div class="text-center py-10"><i class="fas fa-inbox text-4xl text-gray-200 mb-3"></i><p class="text-gray-400">Nenhum lead nesta categoria.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = leads.map(lead => {
+                const plat = PLATAFORMAS[lead.plataforma] || PLATAFORMAS['whatsapp'];
+                const stConfig = STATUS_CONFIG[lead.status] || STATUS_CONFIG['NOVO'];
+                
+                // Busca Atendente no DB (Simulado)
+                let atendenteHTML = `<span class="text-[10px] font-bold text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> Sem dono</span>`;
+                let btnAction = `<button class="px-3 h-8 rounded-lg bg-green-50 text-green-700 text-xs font-bold hover:bg-green-600 hover:text-white transition">Assumir</button>`;
+                
+                if (lead.atendenteId && typeof DB !== 'undefined') {
+                    const atendente = DB.vendedores.find(v => v.id === lead.atendenteId);
+                    if (atendente) {
+                        atendenteHTML = `
+                            <img src="${atendente.foto}" class="w-5 h-5 rounded-full border border-gray-200">
+                            <span class="text-[10px] font-bold text-gray-600 ml-1">${atendente.nome}</span>
+                        `;
+                        // Se tiver atendente, botões mudam
+                        btnAction = `
+                             <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fas fa-comment-alt"></i></button>
+                             <button class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition"><i class="fas fa-ellipsis-v"></i></button>
+                        `;
+                    }
+                }
+
+                return `
+                <div class="bg-white rounded-xl shadow-sm border-l-4 ${stConfig.border} p-4 relative active:scale-[0.99] transition duration-150 animate-fade-in hover:shadow-md cursor-pointer">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="relative">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURI(lead.nome)}&background=random" class="w-10 h-10 rounded-full border border-gray-100">
+                                <div class="absolute -bottom-1 -right-1 ${plat.colorBg} text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] border border-white"><i class="${plat.icon}"></i></div>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="font-bold text-gray-800 text-sm">${lead.nome}</h3>
+                                <p class="text-[10px] text-gray-400 flex items-center"><i class="fas fa-map-marker-alt mr-1"></i> ${lead.local}</p>
+                            </div>
+                        </div>
+                        <span class="${stConfig.badge} text-[10px] font-bold px-2 py-0.5 rounded-full">${lead.status}</span>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-2 rounded-lg mb-3 border border-gray-100">
+                        <p class="text-xs font-bold text-gray-700 flex items-center mb-1"><i class="fas fa-tag text-gray-400 mr-2"></i> ${lead.interesse}</p>
+                        <p class="text-[10px] text-gray-500 pl-5 truncate italic">"${lead.msg}"</p>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                        <div class="flex items-center">
+                            <span class="text-[10px] text-gray-400 mr-2">Atendente:</span>
+                            ${atendenteHTML}
+                        </div>
+                        <div class="flex space-x-2">
+                            ${btnAction}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Utils (Mobile Menu e Modal - Mesmo código dos outros arquivos)
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            const content = id === 'modalNovoAnuncio' ? document.getElementById('anuncioContent') : null;
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden';
+                if(content) { content.style.transform = ''; content.classList.remove('smooth-transition'); }
+            } else { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; }
+        }
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenuSheet'); const content = document.getElementById('menuContent');
+            if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); document.body.style.overflow = 'hidden'; content.style.transform = ''; content.classList.remove('smooth-transition'); } 
+            else { menu.classList.add('hidden'); document.body.style.overflow = ''; }
+        }
+        function setupDraggable(handleId, contentId, closeCallback) {
+            const handle = document.getElementById(handleId); const content = document.getElementById(contentId);
+            if(!handle || !content) return;
+            let startY = 0; let currentTranslate = 0; let isDragging = false;
+            handle.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; isDragging = true; content.classList.remove('smooth-transition'); }, { passive: false });
+            handle.addEventListener('touchmove', (e) => { if (!isDragging) return; const currentY = e.touches[0].clientY; const diff = currentY - startY; if (diff > 0) { e.preventDefault(); currentTranslate = diff; content.style.transform = `translateY(${diff}px)`; } }, { passive: false });
+            handle.addEventListener('touchend', () => { isDragging = false; content.classList.add('smooth-transition'); if (currentTranslate > 100) { content.style.transform = `translateY(100%)`; setTimeout(closeCallback, 200); } else { content.style.transform = ''; } currentTranslate = 0; });
+        }
+        if ('ontouchstart' in window) {
+            setupDraggable('menuHandle', 'menuContent', toggleMenu);
+            setupDraggable('anuncioHandle', 'anuncioContent', () => toggleModal('modalNovoAnuncio'));
+        }
+    </script>
+</body>
+</html>
