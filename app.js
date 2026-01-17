@@ -2,9 +2,8 @@
 // APP.JS - A INTERFACE (Manipulação de DOM & Renderização)
 // ============================================================
 
-// 1. Configurar Tailwind (Visual & Dark Mode)
 tailwind.config = {
-    darkMode: 'class', // Habilita troca de tema via classe .dark
+    darkMode: 'class',
     theme: {
         extend: {
             colors: {
@@ -25,43 +24,36 @@ tailwind.config = {
     }
 }
 
-// 2. Inicializador da Página
 document.addEventListener('DOMContentLoaded', () => {
-    // A ordem importa:
-    System.initTheme();           // 1. Aplica Dark/Light mode salvo
-    UI.aplicarIdentidade();       // 2. Aplica Logos e Cores
-    UI.atualizarTextos();         // 3. Traduz a página (e gera o menu)
-    UI.renderizarDadosDaPagina(); // 4. Preenche listas (Estoque, Leads)
+    System.initTheme();           
+    UI.aplicarIdentidade();       
+    UI.atualizarTextos();         
+    UI.renderizarDadosDaPagina();
+    
+    // NOVO: Inicializa os arrastáveis (Draggable) automaticamente
+    UI.initDraggables(); 
 });
 
-// 3. Objeto de Controle de Interface (UI)
 const UI = {
 
     // --- IDENTIDADE VISUAL ---
     aplicarIdentidade: () => {
         document.title = `${CLIENTE.info.nome} - Sistema`;
-
-        // Textos e Ícones da Marca
         document.querySelectorAll('.app-name').forEach(el => el.textContent = CLIENTE.info.logoTexto);
         document.querySelectorAll('.app-icon').forEach(el => el.className = `fas ${CLIENTE.info.logoIcone} app-icon mr-2`);
 
-        // Dados do Usuário (Nome, Cargo, Foto)
         if (typeof DB !== 'undefined') {
             document.querySelectorAll('.user-first-name').forEach(el => el.textContent = Core.getFirstName(DB.usuarioAtual.nome));
-
             const els = { 
                 'user-name': DB.usuarioAtual.nome, 
                 'user-role': DB.usuarioAtual.cargo, 
                 'menu-user-name': DB.usuarioAtual.nome, 
                 'menu-user-role': DB.usuarioAtual.cargo 
             };
-            
             for(const [id, val] of Object.entries(els)) {
                 const el = document.getElementById(id);
                 if(el) el.textContent = val;
             }
-            
-            // Avatares
             ['user-avatar', 'user-avatar-mobile', 'menu-user-avatar'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.src = DB.usuarioAtual.avatar;
@@ -69,30 +61,110 @@ const UI = {
         }
     },
 
-    // --- INTERNACIONALIZAÇÃO (i18n) ---
+    // --- INTERNACIONALIZAÇÃO ---
     atualizarTextos: () => {
-        // 1. Procura elementos com data-i18n="chave" e traduz
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             el.textContent = System.t(key);
         });
-
-        // 2. Regenera o menu mobile para aplicar a tradução nos botões
         UI.renderizarMenuMobile();
     },
 
-    // --- MENU MOBILE INTELIGENTE ---
+    // --- INTERATIVIDADE (MODAIS E MENUS) ---
+    // Movi do HTML para cá
+    
+    toggleModal: (id) => {
+        const modal = document.getElementById(id);
+        const content = id === 'modalNovoAnuncio' ? document.getElementById('anuncioContent') : null;
+        
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex'); 
+            document.body.style.overflow = 'hidden';
+            if(content) { 
+                content.style.transform = ''; 
+                content.classList.remove('smooth-transition'); 
+            }
+        } else { 
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex'); 
+            document.body.style.overflow = ''; 
+        }
+    },
+
+    toggleMenu: () => {
+        const menu = document.getElementById('mobileMenuSheet'); 
+        const content = document.getElementById('menuContent');
+        
+        if (menu.classList.contains('hidden')) { 
+            menu.classList.remove('hidden'); 
+            document.body.style.overflow = 'hidden'; 
+            content.style.transform = ''; 
+            content.classList.remove('smooth-transition'); 
+        } else { 
+            menu.classList.add('hidden'); 
+            document.body.style.overflow = ''; 
+        }
+    },
+
+    // Inicializa a lógica de arrastar (Touch) para fechar menus
+    initDraggables: () => {
+        if (!('ontouchstart' in window)) return; // Só roda em touch devices
+
+        const setup = (handleId, contentId, closeCallback) => {
+            const handle = document.getElementById(handleId); 
+            const content = document.getElementById(contentId);
+            if(!handle || !content) return;
+
+            let startY = 0; let currentTranslate = 0; let isDragging = false;
+            
+            handle.addEventListener('touchstart', (e) => { 
+                startY = e.touches[0].clientY; 
+                isDragging = true; 
+                content.classList.remove('smooth-transition'); 
+            }, { passive: false });
+            
+            handle.addEventListener('touchmove', (e) => { 
+                if (!isDragging) return; 
+                const currentY = e.touches[0].clientY; 
+                const diff = currentY - startY; 
+                if (diff > 0) { 
+                    e.preventDefault(); 
+                    currentTranslate = diff; 
+                    content.style.transform = `translateY(${diff}px)`; 
+                } 
+            }, { passive: false });
+            
+            handle.addEventListener('touchend', () => { 
+                isDragging = false; 
+                content.classList.add('smooth-transition'); 
+                if (currentTranslate > 100) { 
+                    content.style.transform = `translateY(100%)`; 
+                    setTimeout(closeCallback, 200); 
+                } else { 
+                    content.style.transform = ''; 
+                } 
+                currentTranslate = 0; 
+            });
+        };
+
+        // Configura os dois elementos arrastáveis padrão
+        setup('menuHandle', 'menuContent', UI.toggleMenu);
+        setup('anuncioHandle', 'anuncioContent', () => UI.toggleModal('modalNovoAnuncio'));
+    },
+
+    // --- MENU MOBILE ---
     renderizarMenuMobile: () => {
         const navContainer = document.getElementById('mobile-navigation');
         if (!navContainer) return;
 
-        // Lista de Botões (Usando System.t para traduzir os rótulos)
+        // IMPORTANTE: Agora as ações chamam UI.toggle...
         const menuItems = [
             { label: System.t('nav_home'),  icon: 'fas fa-home',      link: 'admin.html' },
             { label: System.t('nav_leads'), icon: 'fas fa-users',     link: 'leads.html' },
-            { label: System.t('btn_new'),   icon: 'fas fa-plus',      action: "toggleModal('modalNovoAnuncio')", isFab: true },
+            { label: System.t('btn_new'),   icon: 'fas fa-plus',      action: "UI.toggleModal('modalNovoAnuncio')", isFab: true },
             { label: System.t('nav_stock'), icon: 'fas fa-box',       link: 'estoque.html' },
-            { label: System.t('nav_menu'),  icon: 'fas fa-bars',      action: "toggleMenu()" }
+            { label: System.t('nav_menu'),  icon: 'fas fa-bars',      action: "UI.toggleMenu()" }
         ];
 
         const currentPage = Core.getCurrentPage(); 
@@ -100,7 +172,6 @@ const UI = {
         let html = '';
         menuItems.forEach(item => {
             if (item.isFab) {
-                // Botão Flutuante Central (FAB)
                 html += `
                 <div class="relative -top-5">
                     <button onclick="${item.action}" class="w-14 h-14 bg-brand-500 rounded-full shadow-xl flex items-center justify-center text-white text-2xl transform transition active:scale-90 tap-highlight-transparent border-4 border-gray-50 hover:bg-brand-600 dark:border-gray-900">
@@ -108,7 +179,6 @@ const UI = {
                     </button>
                 </div>`;
             } else {
-                // Botões Normais de Navegação
                 const isActive = currentPage === item.link;
                 const colorClass = isActive ? 'text-brand-600 font-bold dark:text-brand-500' : 'text-gray-400 hover:text-brand-600 font-medium dark:text-gray-500 dark:hover:text-brand-400';
                 const clickAction = item.link ? `onclick="window.location.href='${item.link}'"` : `onclick="${item.action}"`;
@@ -123,19 +193,15 @@ const UI = {
         navContainer.innerHTML = html;
     },
 
-    // --- RENDERIZAÇÃO DE DADOS (Listas) ---
+    // --- RENDERIZAÇÃO DE DADOS ---
     renderizarDadosDaPagina: () => {
-        // Verifica se existe container de estoque na página atual
         const containerEstoque = document.getElementById('lista-estoque');
-        
         if (containerEstoque && typeof DB !== 'undefined') {
             const dados = DB.estoque;
-
             if(dados.length === 0) {
                 containerEstoque.innerHTML = `<p class="text-center text-gray-400 py-4">Nenhum item encontrado.</p>`;
                 return;
             }
-
             containerEstoque.innerHTML = dados.map(item => `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 flex flex-col md:flex-row gap-4 mb-4 transition hover:shadow-md">
                     <div class="w-full md:w-32 h-32 md:h-24 bg-gray-200 rounded-lg relative overflow-hidden group shrink-0">
